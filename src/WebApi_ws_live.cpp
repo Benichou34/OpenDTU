@@ -304,8 +304,10 @@ void WebApiWsLiveClass::generatePowerMeterJsonResponse(JsonObject& root)
                  JsyMkClass::Field_t::POWER_FACTOR,
                  JsyMkClass::Field_t::FREQUENCY,
                  JsyMkClass::Field_t::NEGATIVE,
-                 JsyMkClass::Field_t::POSITIVE_ENERGY,
-                 JsyMkClass::Field_t::NEGATIVE_ENERGY }) {
+                 JsyMkClass::Field_t::TODAY_POSITIVE_ENERGY,
+                 JsyMkClass::Field_t::TODAY_NEGATIVE_ENERGY,
+                 JsyMkClass::Field_t::TOTAL_POSITIVE_ENERGY,
+                 JsyMkClass::Field_t::TOTAL_NEGATIVE_ENERGY }) {
 
             String channel(i);
             String name = JsyMk.getFieldName(i, field);

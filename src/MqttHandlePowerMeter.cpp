@@ -52,8 +52,8 @@ void MqttHandlePowerMeterClass::loop()
         publishField(i, Field_t::POWER_FACTOR);
         publishField(i, Field_t::FREQUENCY);
         publishField(i, Field_t::NEGATIVE);
-        publishField(i, Field_t::POSITIVE_ENERGY);
-        publishField(i, Field_t::NEGATIVE_ENERGY);
+        publishField(i, Field_t::TOTAL_POSITIVE_ENERGY);
+        publishField(i, Field_t::TOTAL_NEGATIVE_ENERGY);
 
         yield();
     }

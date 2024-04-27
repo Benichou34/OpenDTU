@@ -13,7 +13,7 @@ constexpr std::string_view scMeasurement("measurement");
 constexpr std::string_view scTotalIncreasing("total_increasing");
 
 // Name, unit, digits, HA device class, HA status class
-constexpr std::array<std::tuple<std::string_view, std::string_view, size_t, std::string_view, std::string_view>, 14> fieldInfos = { //
+constexpr std::array<std::tuple<std::string_view, std::string_view, size_t, std::string_view, std::string_view>, 16> fieldInfos = { //
     { { "Address", {}, {}, {}, {} },
         { "Manufacturer", {}, {}, {}, {} },
         { "Model", {}, {}, {}, {} },
@@ -27,7 +27,9 @@ constexpr std::array<std::tuple<std::string_view, std::string_view, size_t, std:
         { "Frequency", "Hz", 2, "frequency", scMeasurement },
         { "Negative", {}, {}, {}, scMeasurement },
         { "Positive Energy", "kWh", 2, "energy", scTotalIncreasing },
-        { "Negative Energy", "kWh", 2, "energy", scTotalIncreasing } }
+        { "Negative Energy", "kWh", 2, "energy", scTotalIncreasing },
+        { {}, "kWh", 2, "energy", scTotalIncreasing },
+        { {}, "kWh", 2, "energy", scTotalIncreasing } }
 };
 }
 JsyMkClass::JsyMkClass()
@@ -69,6 +71,22 @@ void JsyMkClass::loop()
         MessageOutput.println("JSY-MK-xxxT Initialized");
         MessageOutput.printf("Model: %s %s\n", _jsymk.getModelAsString().c_str(), _jsymk.getVersionAsString().c_str());
         MessageOutput.printf("Ranges: %dV %dA\n", _jsymk.getVoltageRange(), _jsymk.getCurrentRange());
+    } else {
+        // Check current time
+        time_t now = time(nullptr);
+        const auto* lt = localtime(&now);
+
+        if (lt->tm_hour == 0 && lt->tm_min == 0 && lt->tm_sec <= Configuration.get().SerialModbus.PollInterval) {
+            _todayPositiveRef = 0;
+            _todayNegativeRef = 0;
+        }
+
+        if (_todayPositiveRef == 0) {
+            _todayPositiveRef = _jsymk.getPositiveEnergy();
+        }
+        if (_todayNegativeRef == 0) {
+            _todayNegativeRef = _jsymk.getNegativeEnergy();
+        }
     }
 }
 
@@ -169,11 +187,17 @@ float JsyMkClass::getFieldValue(size_t channel, Field_t fieldId) const
     case Field_t::NEGATIVE:
         return isLogicalNegative() ? 1 : 0;
 
-    case Field_t::POSITIVE_ENERGY:
+    case Field_t::TOTAL_POSITIVE_ENERGY:
         return (config.PowerMeter.channel[channel].InvertDirection ? _jsymk.getNegativeEnergy() : _jsymk.getPositiveEnergy());
 
-    case Field_t::NEGATIVE_ENERGY:
+    case Field_t::TOTAL_NEGATIVE_ENERGY:
         return (config.PowerMeter.channel[channel].InvertDirection ? _jsymk.getPositiveEnergy() : _jsymk.getNegativeEnergy());
+
+    case Field_t::TODAY_POSITIVE_ENERGY:
+        return (config.PowerMeter.channel[channel].InvertDirection ? _jsymk.getNegativeEnergy() - _todayNegativeRef : _jsymk.getPositiveEnergy() - _todayPositiveRef);
+
+    case Field_t::TODAY_NEGATIVE_ENERGY:
+        return (config.PowerMeter.channel[channel].InvertDirection ? _jsymk.getPositiveEnergy() - _todayPositiveRef : _jsymk.getNegativeEnergy() - _todayNegativeRef);
 
     default:
         break;

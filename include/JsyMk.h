@@ -21,8 +21,10 @@ public:
         POWER_FACTOR,
         FREQUENCY,
         NEGATIVE,
-        POSITIVE_ENERGY,
-        NEGATIVE_ENERGY
+        TOTAL_POSITIVE_ENERGY,
+        TOTAL_NEGATIVE_ENERGY,
+        TODAY_POSITIVE_ENERGY,
+        TODAY_NEGATIVE_ENERGY
     };
 
     JsyMkClass();
@@ -54,6 +56,8 @@ private:
     Task _loopTask;
     bool _initialised = false;
     uint32_t _lastUpdate = 0;
+    float _todayPositiveRef = 0;
+    float _todayNegativeRef = 0;
 };
 
 extern JsyMkClass JsyMk;
