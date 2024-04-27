@@ -4,6 +4,7 @@
  */
 #include "Display_Graphic.h"
 #include "Datastore.h"
+#include "JsyMk.h"
 #include <NetworkSettings.h>
 #include <map>
 #include <time.h>
@@ -40,6 +41,9 @@ static const char* const i18n_yield_total_kwh[] = { "total: %.1f kWh", "Ges.: %.
 static const char* const i18n_yield_total_mwh[] = { "total: %.0f kWh", "Ges.: %.0f kWh", "total: %.0f kWh" };
 
 static const char* const i18n_date_format[] = { "%m/%d/%Y %H:%M", "%d.%m.%Y %H:%M", "%d/%m/%Y %H:%M" };
+
+static const char* const i18n_powermeter_power_w[] = { "%+.0f W", "%+.0f W", "%+.0f W" };
+static const char* const i18n_powermeter_power_kw[] = { "%+.1f kW", "%+.1f kW", "%+.1f kW" };
 
 DisplayGraphicClass::DisplayGraphicClass()
     : _loopTask(TASK_IMMEDIATE, TASK_FOREVER, std::bind(&DisplayGraphicClass::loop, this))
@@ -202,8 +206,18 @@ void DisplayGraphicClass::loop()
     bool displayPowerSave = false;
     bool showText = true;
 
+    // Every 10 seconds, swap screen
+    if (_mExtra % (10 * 2) < 10 && JsyMk.isInitialised()) {
+        const float watts = JsyMk.getFieldValue(0, JsyMkClass::Field_t::POWER);
+        if (watts > 999) {
+            snprintf(_fmtText, sizeof(_fmtText), i18n_powermeter_power_kw[_display_language], watts / 1000);
+        } else {
+            snprintf(_fmtText, sizeof(_fmtText), i18n_powermeter_power_w[_display_language], watts);
+        }
+        printText(_fmtText, 0);
+    }
     //=====> Actual Production ==========
-    if (Datastore.getIsAtLeastOneReachable()) {
+    else if (Datastore.getIsAtLeastOneReachable()) {
         displayPowerSave = false;
         if (_isLarge) {
             uint8_t screenSaverOffsetX = enableScreensaver ? (_mExtra % 7) : 0;
