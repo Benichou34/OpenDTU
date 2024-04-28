@@ -28,8 +28,8 @@ constexpr std::array<std::tuple<std::string_view, std::string_view, size_t, std:
         { "Negative", {}, {}, {}, scMeasurement },
         { "Positive Energy", "kWh", 2, "energy", scTotalIncreasing },
         { "Negative Energy", "kWh", 2, "energy", scTotalIncreasing },
-        { {}, "kWh", 2, "energy", scTotalIncreasing },
-        { {}, "kWh", 2, "energy", scTotalIncreasing } }
+        { "Today Positive Energy", "kWh", 2, "energy", scTotalIncreasing },
+        { "Today Negative Energy", "kWh", 2, "energy", scTotalIncreasing } }
 };
 }
 JsyMkClass::JsyMkClass()
