@@ -31,7 +31,8 @@ constexpr std::array<std::tuple<std::string_view, std::string_view, size_t, std:
         { "Today Positive Energy", "kWh", 2, "energy", scTotalIncreasing },
         { "Today Negative Energy", "kWh", 2, "energy", scTotalIncreasing } }
 };
-}
+} // namespace
+
 JsyMkClass::JsyMkClass()
     : _jsymk(1)
     , _loopTask(TASK_IMMEDIATE, TASK_FOREVER, std::bind(&JsyMkClass::loop, this))
@@ -73,10 +74,11 @@ void JsyMkClass::loop()
         MessageOutput.printf("Ranges: %dV %dA\n", _jsymk.getVoltageRange(), _jsymk.getCurrentRange());
     } else {
         // Check current time
+        struct tm lt;
         time_t now = time(nullptr);
-        const auto* lt = localtime(&now);
+        localtime_r(&now, &lt);
 
-        if (lt->tm_hour == 0 && lt->tm_min == 0 && lt->tm_sec <= Configuration.get().SerialModbus.PollInterval) {
+        if (lt.tm_hour == 0 && lt.tm_min == 0 && lt.tm_sec <= Configuration.get().SerialModbus.PollInterval) {
             _todayPositiveRef = 0;
             _todayNegativeRef = 0;
         }
